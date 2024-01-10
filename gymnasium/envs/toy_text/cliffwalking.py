@@ -96,15 +96,16 @@ class CliffWalkingEnv(Env):
     }
 
     def __init__(self, render_mode: Optional[str] = None):
-        self.shape = (4, 12)
-        self.start_state_index = np.ravel_multi_index((3, 0), self.shape)
+        nrows = 10
+        self.shape = (nrows, 12)
+        self.start_state_index = np.ravel_multi_index((nrows-1, 0), self.shape)
 
         self.nS = np.prod(self.shape)
         self.nA = 4
 
         # Cliff Location
         self._cliff = np.zeros(self.shape, dtype=bool)
-        self._cliff[3, 1:-1] = True
+        self._cliff[nrows-1, 1:-1] = True
 
         # Calculate transition probabilities and rewards
         self.P = {}
