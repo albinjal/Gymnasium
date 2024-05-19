@@ -228,7 +228,7 @@ class FrozenLakeEnv(Env):
             desc = MAPS[map_name]
         self.desc = desc = np.asarray(desc, dtype="c")
         self.nrow, self.ncol = nrow, ncol = desc.shape
-        self.reward_range = (0, 1)
+        self.reward_range = (-1, 1) # update to reflect neg reward on hole
 
         nA = 4
         nS = nrow * ncol
@@ -257,7 +257,7 @@ class FrozenLakeEnv(Env):
             newstate = to_s(newrow, newcol)
             newletter = desc[newrow, newcol]
             terminated = bytes(newletter) in b"GH"
-            reward = float(newletter == b"G")
+            reward = float(newletter == b"G") - float(newletter == b"H") # update so holes give negative reward
             return newstate, reward, terminated
 
         for row in range(nrow):
