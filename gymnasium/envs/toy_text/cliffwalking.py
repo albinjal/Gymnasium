@@ -95,8 +95,7 @@ class CliffWalkingEnv(Env):
         "render_fps": 4,
     }
 
-    def __init__(self, render_mode: Optional[str] = None):
-        nrows = 6
+    def __init__(self, render_mode: Optional[str] = None, nrows=4):
         self.shape = (nrows, 12)
         self.start_state_index = np.ravel_multi_index((nrows-1, 0), self.shape)
 
