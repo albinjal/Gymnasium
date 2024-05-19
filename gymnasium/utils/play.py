@@ -10,7 +10,6 @@ import gymnasium as gym
 from gymnasium import Env, logger
 from gymnasium.core import ActType, ObsType
 from gymnasium.error import DependencyNotInstalled
-from gymnasium.logger import deprecation
 
 
 try:
@@ -19,7 +18,7 @@ try:
     from pygame.event import Event
 except ImportError as e:
     raise gym.error.DependencyNotInstalled(
-        "pygame is not installed, run `pip install gymnasium[classic-control]`"
+        'pygame is not installed, run `pip install "gymnasium[classic_control]"`'
     ) from e
 
 try:
@@ -28,7 +27,7 @@ try:
     matplotlib.use("TkAgg")
     import matplotlib.pyplot as plt
 except ImportError:
-    logger.warn("matplotlib is not installed, run `pip install gymnasium[other]`")
+    logger.warn('matplotlib is not installed, run `pip install "gymnasium[other]"`')
     matplotlib, plt = None, None
 
 
@@ -135,8 +134,7 @@ def display_arr(
         video_size: The video size of the screen
         transpose: If to transpose the array on the screen
     """
-    arr_min, arr_max = np.min(arr), np.max(arr)
-    arr = 255.0 * (arr - arr_min) / (arr_max - arr_min)
+    assert isinstance(arr, np.ndarray) and arr.dtype == np.uint8
     pyg_img = pygame.surfarray.make_surface(arr.swapaxes(0, 1) if transpose else arr)
     pyg_img = pygame.transform.scale(pyg_img, video_size)
     # We might have to add black bars if surface_size is larger than video_size
@@ -153,11 +151,14 @@ def play(
     fps: int | None = None,
     zoom: float | None = None,
     callback: Callable | None = None,
-    keys_to_action: dict[tuple[str | int] | str, ActType] | None = None,
+    keys_to_action: dict[tuple[str | int, ...] | str | int, ActType] | None = None,
     seed: int | None = None,
     noop: ActType = 0,
+    wait_on_player: bool = False,
 ):
     """Allows the user to play the environment using a keyboard.
+
+    If playing in a turn-based environment, set wait_on_player to True.
 
     Args:
         env: Environment to use for playing.
@@ -206,8 +207,11 @@ def play(
             If ``None``, default ``key_to_action`` mapping for that environment is used, if provided.
         seed: Random seed used when resetting the environment. If None, no seed is used.
         noop: The action used when no key input has been entered, or the entered key combination is unknown.
+        wait_on_player: Play should wait for a user action
 
     Example:
+        >>> import gymnasium as gym
+        >>> import numpy as np
         >>> from gymnasium.utils.play import play
         >>> play(gym.make("CarRacing-v2", render_mode="rgb_array"),  # doctest: +SKIP
         ...     keys_to_action={
@@ -250,7 +254,19 @@ def play(
                 f"{env.spec.id} does not have explicit key to action mapping, "
                 "please specify one manually"
             )
+
     assert keys_to_action is not None
+
+    # validate the `keys_to_action` set provided
+    assert isinstance(keys_to_action, dict)
+    for key, action in keys_to_action.items():
+        if isinstance(key, tuple):
+            assert len(key) > 0
+            assert all(isinstance(k, (str, int)) for k in key)
+        else:
+            assert isinstance(key, (str, int))
+
+        assert action in env.action_space
 
     key_code_to_action = {}
     for key_combination, action in keys_to_action.items():
@@ -271,7 +287,7 @@ def play(
         if done:
             done = False
             obs = env.reset(seed=seed)
-        else:
+        elif wait_on_player is False or len(game.pressed_keys) > 0:
             action = key_code_to_action.get(tuple(sorted(game.pressed_keys)), noop)
             prev_obs = obs
             obs, rew, terminated, truncated, info = env.step(action)
@@ -340,16 +356,13 @@ class PlayPlot:
         Raises:
             DependencyNotInstalled: If matplotlib is not installed
         """
-        deprecation(
-            "`PlayPlot` is marked as deprecated and will be removed in the near future."
-        )
         self.data_callback = callback
         self.horizon_timesteps = horizon_timesteps
         self.plot_names = plot_names
 
         if plt is None:
             raise DependencyNotInstalled(
-                "matplotlib is not installed, run `pip install gymnasium[other]`"
+                'matplotlib is not installed, run `pip install "gymnasium[other]"`'
             )
 
         num_plots = len(self.plot_names)
@@ -402,6 +415,6 @@ class PlayPlot:
 
         if plt is None:
             raise DependencyNotInstalled(
-                "matplotlib is not installed, run `pip install gymnasium[other]`"
+                'matplotlib is not installed, run `pip install "gymnasium[other]"`'
             )
         plt.pause(0.000001)
