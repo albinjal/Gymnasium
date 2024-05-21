@@ -15,7 +15,7 @@ This fork of Gymnasium contains updates to the Cliffwalking and Frozen Lake Envi
 
 Install with
 ```bash
-gymnasium[toy-text] @ git+https://github.com/albinjal/Gymnasium@main
+pip install gymnasium[toy-text] @ git+https://github.com/albinjal/Gymnasium@main
 ```
 
 -- Resume regular readme--
