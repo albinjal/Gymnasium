@@ -13,9 +13,9 @@ This fork of Gymnasium contains updates to the Cliffwalking and Frozen Lake Envi
 - For Cliffwalking, the number of rows in the map can be manually adjusted with the `nrows` parameter.
 - For Frozen Lake, the reward for falling into into a hole can be set by adjusting `hole_reward`.
 
-Install with
+Install via pip as
 ```bash
-pip install gymnasium[toy-text] @ git+https://github.com/albinjal/Gymnasium@main
+gymnasium[toy-text] @ git+https://github.com/albinjal/Gymnasium@main
 ```
 
 -- Resume regular readme--
